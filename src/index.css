@@ -1,0 +1,108 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Updating the background gradient colors to be less bright and more purple-focused */
+    --background: 258 75% 45%;
+    --foreground: 213 31% 91%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224 76% 48%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 210 40% 98%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 212.7 26.8% 83.9%;
+
+    /* App specific colors - updated for better contrast */
+    --uber: 265 70% 60%;
+    --uber-transparent: 265 70% 60% / 0.25;
+    --ola: 200 85% 60%;
+    --ola-transparent: 200 85% 60% / 0.25;
+    --rapido: 40 95% 60%;
+    --rapido-transparent: 40 95% 60% / 0.25;
+    --gradient-start: 260 70% 40%;
+    --gradient-end: 270 75% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/20 backdrop-blur-md border border-white/20 rounded-lg shadow-lg;
+  }
+  
+  .ride-card {
+    @apply transition-all duration-300 hover:scale-[1.02];
+  }
+  
+  .ride-card.uber {
+    @apply border-[hsl(var(--uber))] bg-[hsl(var(--uber-transparent))];
+  }
+  
+  .ride-card.ola {
+    @apply border-[hsl(var(--ola))] bg-[hsl(var(--ola-transparent))];
+  }
+  
+  .ride-card.rapido {
+    @apply border-[hsl(var(--rapido))] bg-[hsl(var(--rapido-transparent))];
+  }
+
+  .recommended {
+    @apply relative overflow-hidden before:absolute before:top-0 before:right-0 before:content-[''] 
+           before:w-24 before:h-24 before:bg-[hsl(var(--gradient-start))] 
+           before:rotate-45 before:translate-x-12 before:-translate-y-12;
+  }
+  
+  .compare-button {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3 rounded-md transition-all duration-300;
+  }
+  
+  .location-input {
+    @apply bg-white/25 border-white/30 text-white placeholder:text-white/70;
+  }
+}
