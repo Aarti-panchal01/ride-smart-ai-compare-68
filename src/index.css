@@ -5,55 +5,67 @@
 
 @layer base {
   :root {
-    /* Updating the background gradient colors to be less bright and more purple-focused */
-    --background: 258 75% 45%;
-    --foreground: 213 31% 91%;
+    /* Enhanced color palette with warmer, more appealing colors */
+    --background: 245 84% 8%;
+    --foreground: 210 40% 98%;
 
-    --card: 224 71% 4%;
-    --card-foreground: 213 31% 91%;
+    --card: 247 84% 12%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 224 71% 4%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 247 84% 12%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 168 76% 42%;
+    --primary-foreground: 220 14% 11%;
 
-    --secondary: 222.2 47.4% 11.2%;
+    --secondary: 215 28% 17%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 217 10% 64%;
 
-    --accent: 216 34% 17%;
+    --accent: 215 28% 17%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224 76% 48%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 168 76% 42%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-background: 220 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 210 40% 98%;
-    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-primary-foreground: 220 14% 11%;
+    --sidebar-accent: 215 28% 17%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 212.7 26.8% 83.9%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 168 76% 42%;
 
-    /* App specific colors - updated for better contrast */
-    --uber: 265 70% 60%;
-    --uber-transparent: 265 70% 60% / 0.25;
-    --ola: 200 85% 60%;
-    --ola-transparent: 200 85% 60% / 0.25;
-    --rapido: 40 95% 60%;
-    --rapido-transparent: 40 95% 60% / 0.25;
-    --gradient-start: 260 70% 40%;
-    --gradient-end: 270 75% 50%;
+    /* Enhanced app specific colors with warmer tones */
+    --uber: 265 60% 55%;
+    --uber-transparent: 265 60% 55% / 0.15;
+    --ola: 195 80% 50%;
+    --ola-transparent: 195 80% 50% / 0.15;
+    --rapido: 45 90% 55%;
+    --rapido-transparent: 45 90% 55% / 0.15;
+    
+    /* Beautiful gradient colors */
+    --gradient-start: 220 26% 14%;
+    --gradient-mid: 230 35% 7%;
+    --gradient-end: 240 100% 9%;
+    
+    /* Glass effect colors */
+    --glass-bg: 210 40% 98% / 0.08;
+    --glass-border: 210 40% 98% / 0.18;
+    
+    /* Accent colors for highlights */
+    --accent-cyan: 180 100% 70%;
+    --accent-purple: 270 100% 80%;
+    --accent-pink: 320 100% 74%;
   }
 }
 
@@ -65,7 +77,7 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+    background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-mid)), hsl(var(--gradient-end)));
     background-attachment: fixed;
     min-height: 100vh;
   }
@@ -73,36 +85,44 @@
 
 @layer components {
   .glass {
-    @apply bg-white/20 backdrop-blur-md border border-white/20 rounded-lg shadow-lg;
+    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-xl border border-[hsl(var(--glass-border))] rounded-xl shadow-2xl;
+    background: linear-gradient(135deg, hsl(var(--glass-bg)), hsl(210 40% 98% / 0.02));
   }
   
   .ride-card {
-    @apply transition-all duration-300 hover:scale-[1.02];
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl;
   }
   
   .ride-card.uber {
     @apply border-[hsl(var(--uber))] bg-[hsl(var(--uber-transparent))];
+    box-shadow: 0 8px 32px hsl(var(--uber) / 0.12);
   }
   
   .ride-card.ola {
     @apply border-[hsl(var(--ola))] bg-[hsl(var(--ola-transparent))];
+    box-shadow: 0 8px 32px hsl(var(--ola) / 0.12);
   }
   
   .ride-card.rapido {
     @apply border-[hsl(var(--rapido))] bg-[hsl(var(--rapido-transparent))];
+    box-shadow: 0 8px 32px hsl(var(--rapido) / 0.12);
   }
 
   .recommended {
     @apply relative overflow-hidden before:absolute before:top-0 before:right-0 before:content-[''] 
-           before:w-24 before:h-24 before:bg-[hsl(var(--gradient-start))] 
+           before:w-24 before:h-24 before:bg-[hsl(var(--accent-cyan))] 
            before:rotate-45 before:translate-x-12 before:-translate-y-12;
   }
   
   .compare-button {
-    @apply bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-medium py-3 rounded-md transition-all duration-300;
+    @apply bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent-cyan))] 
+           hover:from-[hsl(var(--primary)/0.9)] hover:to-[hsl(var(--accent-cyan)/0.9)] 
+           text-background font-semibold py-3 rounded-xl transition-all duration-300 
+           shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
   }
   
   .location-input {
-    @apply bg-white/25 border-white/30 text-white placeholder:text-white/70;
+    @apply bg-[hsl(var(--glass-bg))] border-[hsl(var(--glass-border))] text-foreground 
+           placeholder:text-foreground/60 rounded-xl;
   }
 }

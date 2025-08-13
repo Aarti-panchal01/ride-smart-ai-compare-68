@@ -1,5 +1,8 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 interface MapProps {
   source?: string;
@@ -12,6 +15,10 @@ interface RouteInfo {
 }
 
 const Map: React.FC<MapProps> = ({ source, destination }) => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [showTokenInput, setShowTokenInput] = useState<boolean>(true);
   const [routeInfo, setRouteInfo] = useState<RouteInfo>({
     distance: '0',
     duration: '0'
@@ -20,11 +27,8 @@ const Map: React.FC<MapProps> = ({ source, destination }) => {
   // Simulate fetching route information when source and destination change
   useEffect(() => {
     if (source && destination) {
-      // Simulate API call delay
       const fetchRouteInfo = setTimeout(() => {
-        // Calculate a more realistic distance based on the locations
         const getRouteDetails = () => {
-          // Define some known routes with more accurate distances
           const knownRoutes: Record<string, RouteInfo> = {
             'pesu rr-reva university': { distance: '38.8 km', duration: '1 hr 10 min' },
             'pesu rr-downtown': { distance: '12.3 km', duration: '35 min' },
@@ -34,22 +38,18 @@ const Map: React.FC<MapProps> = ({ source, destination }) => {
             'current location-downtown': { distance: '10.5 km', duration: '30 min' },
           };
 
-          // Create normalized keys for lookup
           const routeKey = `${source.toLowerCase()}-${destination.toLowerCase()}`;
           const reverseRouteKey = `${destination.toLowerCase()}-${source.toLowerCase()}`;
 
-          // Return known route if it exists
           if (knownRoutes[routeKey]) {
             return knownRoutes[routeKey];
           } else if (knownRoutes[reverseRouteKey]) {
             return knownRoutes[reverseRouteKey];
           }
 
-          // Generate realistic random values for unknown routes
-          // Use source and destination strings to create a deterministic but seemingly random distance
           const combinedLength = (source.length + destination.length) % 10;
-          const baseDistance = 5 + combinedLength * 3.5; // Between 5-40 km
-          const baseDuration = Math.round(baseDistance * 1.8); // Approx 1.8 min per km
+          const baseDistance = 5 + combinedLength * 3.5;
+          const baseDuration = Math.round(baseDistance * 1.8);
 
           return {
             distance: `${baseDistance.toFixed(1)} km`,
@@ -66,116 +66,186 @@ const Map: React.FC<MapProps> = ({ source, destination }) => {
     }
   }, [source, destination]);
 
-  return (
-    <div className="w-full h-64 md:h-80 rounded-lg overflow-hidden glass relative">
-      {/* Purple map background */}
-      <div className="absolute inset-0 bg-indigo-900/90">
-        {/* Map grid */}
-        <div className="absolute inset-0 grid grid-cols-12 grid-rows-6">
-          {Array.from({ length: 84 }).map((_, i) => (
-            <div key={i} className="border-[0.5px] border-white/10"></div>
-          ))}
-        </div>
-        
-        {/* Main roads */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-0 w-full h-[2px] bg-white/20"></div>
-          <div className="absolute top-3/4 left-0 w-full h-[2px] bg-white/20"></div>
-          <div className="absolute left-1/4 top-0 h-full w-[2px] bg-white/20"></div>
-          <div className="absolute left-3/4 top-0 h-full w-[2px] bg-white/20"></div>
-          
-          {/* Diagonal roads */}
-          <div className="absolute w-[150%] h-[2px] bg-white/15 origin-bottom-left rotate-45 left-0 top-0"></div>
-          <div className="absolute w-[150%] h-[2px] bg-white/15 origin-top-left -rotate-45 left-0 bottom-0"></div>
-        </div>
-        
-        {/* Map locations/points of interest */}
-        <div className="absolute inset-0">
-          {/* Areas */}
-          <div className="absolute top-[20%] left-[30%] w-[15%] h-[15%] rounded-full bg-purple-500/10 blur-sm"></div>
-          <div className="absolute bottom-[25%] right-[20%] w-[20%] h-[10%] rounded-full bg-blue-500/10 blur-sm"></div>
-          <div className="absolute top-[60%] left-[15%] w-[10%] h-[10%] rounded-full bg-green-500/10 blur-sm"></div>
-          
-          {/* Location markers */}
-          <div className="absolute top-[15%] left-[40%] w-1 h-1 rounded-full bg-white"></div>
-          <div className="absolute top-[45%] left-[20%] w-1.5 h-1.5 rounded-full bg-white/80"></div>
-          <div className="absolute top-[70%] left-[75%] w-1 h-1 rounded-full bg-white"></div>
-          <div className="absolute top-[30%] left-[65%] w-1.5 h-1.5 rounded-full bg-white/80"></div>
-          <div className="absolute top-[60%] left-[35%] w-1 h-1 rounded-full bg-white"></div>
-          <div className="absolute top-[25%] left-[85%] w-1 h-1 rounded-full bg-white/70"></div>
-          <div className="absolute top-[55%] right-[25%] w-1.5 h-1.5 rounded-full bg-white/80"></div>
-          
-          {/* Buildings */}
-          <div className="absolute top-[15%] left-[15%] w-2 h-3 bg-white/10"></div>
-          <div className="absolute top-[25%] left-[55%] w-2.5 h-2 bg-white/10"></div>
-          <div className="absolute top-[65%] left-[80%] w-2 h-2.5 bg-white/10"></div>
-          <div className="absolute top-[75%] left-[25%] w-3 h-2 bg-white/10"></div>
-          <div className="absolute top-[45%] right-[15%] w-2 h-2 bg-white/10"></div>
-          
-          {/* Water body */}
-          <div className="absolute top-[50%] left-[55%] w-[15%] h-[15%] rounded-full bg-blue-400/20"></div>
-          
-          {/* Park/green area */}
-          <div className="absolute top-[20%] right-[25%] w-[10%] h-[10%] bg-green-400/20 rounded-sm"></div>
-        </div>
-        
-        {/* Map labels */}
-        <div className="absolute inset-0 text-[6px] font-mono text-white/30">
-          <div className="absolute top-[22%] left-[32%]">Downtown</div>
-          <div className="absolute bottom-[28%] right-[22%]">Marina</div>
-          <div className="absolute top-[62%] left-[17%]">Park View</div>
-          <div className="absolute top-[53%] left-[56%]">Lake</div>
-          <div className="absolute top-[21%] right-[29%]">Green Park</div>
+  const initializeMap = (token: string) => {
+    if (!mapContainer.current) return;
+
+    mapboxgl.accessToken = token;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      projection: 'globe' as any,
+      zoom: 2,
+      center: [77.5946, 12.9716], // Bangalore coordinates
+      pitch: 50,
+      bearing: 0,
+      antialias: true
+    });
+
+    // Add navigation controls
+    map.current.addControl(
+      new mapboxgl.NavigationControl({
+        visualizePitch: true,
+      }),
+      'top-right'
+    );
+
+    // Add atmosphere and fog effects
+    map.current.on('style.load', () => {
+      map.current?.setFog({
+        color: 'rgb(220, 159, 159)',
+        'high-color': 'rgb(36, 92, 223)',
+        'horizon-blend': 0.4,
+        'space-color': 'rgb(11, 11, 25)',
+        'star-intensity': 0.35
+      });
+    });
+
+    // Rotation animation settings
+    const secondsPerRevolution = 120;
+    const maxSpinZoom = 5;
+    const slowSpinZoom = 3;
+    let userInteracting = false;
+    let spinEnabled = true;
+
+    // Spin globe function
+    function spinGlobe() {
+      if (!map.current) return;
+      
+      const zoom = map.current.getZoom();
+      if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
+        let distancePerSecond = 360 / secondsPerRevolution;
+        if (zoom > slowSpinZoom) {
+          const zoomDif = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
+          distancePerSecond *= zoomDif;
+        }
+        const center = map.current.getCenter();
+        center.lng -= distancePerSecond;
+        map.current.easeTo({ center, duration: 1000, easing: (n) => n });
+      }
+    }
+
+    // Event listeners for interaction
+    map.current.on('mousedown', () => {
+      userInteracting = true;
+    });
+    
+    map.current.on('dragstart', () => {
+      userInteracting = true;
+    });
+    
+    map.current.on('mouseup', () => {
+      userInteracting = false;
+      spinGlobe();
+    });
+    
+    map.current.on('touchend', () => {
+      userInteracting = false;
+      spinGlobe();
+    });
+
+    map.current.on('moveend', () => {
+      spinGlobe();
+    });
+
+    // Start the globe spinning
+    spinGlobe();
+
+    // Add route markers when source and destination are available
+    if (source && destination) {
+      // Add source marker
+      new mapboxgl.Marker({ color: '#22c55e' })
+        .setLngLat([77.5946, 12.9716])
+        .setPopup(new mapboxgl.Popup().setHTML(`<h3>${source}</h3>`))
+        .addTo(map.current);
+
+      // Add destination marker  
+      new mapboxgl.Marker({ color: '#ef4444' })
+        .setLngLat([77.6347, 12.9082])
+        .setPopup(new mapboxgl.Popup().setHTML(`<h3>${destination}</h3>`))
+        .addTo(map.current);
+
+      // Fit to show both markers
+      const bounds = new mapboxgl.LngLatBounds()
+        .extend([77.5946, 12.9716])
+        .extend([77.6347, 12.9082]);
+      
+      map.current.fitBounds(bounds, { padding: 100 });
+    }
+
+    setShowTokenInput(false);
+  };
+
+  const handleTokenSubmit = () => {
+    if (mapboxToken.trim()) {
+      initializeMap(mapboxToken.trim());
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      map.current?.remove();
+    };
+  }, []);
+
+  if (showTokenInput) {
+    return (
+      <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden glass relative flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Enable 3D Map</h3>
+          <p className="text-sm text-foreground/70 mb-4">
+            Enter your Mapbox public token to see a beautiful 3D globe map. Get your free token at{' '}
+            <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              mapbox.com
+            </a>
+          </p>
+          <div className="space-y-3">
+            <Input
+              type="text"
+              placeholder="pk.eyJ1Ijoi..."
+              value={mapboxToken}
+              onChange={(e) => setMapboxToken(e.target.value)}
+              className="bg-background/50 border-border text-foreground"
+            />
+            <Button 
+              onClick={handleTokenSubmit}
+              disabled={!mapboxToken.trim()}
+              className="w-full"
+            >
+              Initialize Map
+            </Button>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Source and destination route visualization */}
-      {(source && destination) ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-          {/* Route line with points */}
-          <div className="relative w-3/4 h-1 bg-white/20">
-            {/* Start point (green) */}
-            <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 bg-green-400 rounded-full"></div>
-            
-            {/* Route line (white) */}
-            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1.5 bg-white/80"
-                style={{width: '100%'}}></div>
-            
-            {/* End point (red) */}
-            <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 bg-red-400 rounded-full"></div>
-          </div>
-
-          {/* Location labels */}
-          <div className="flex justify-between w-3/4 mt-5 px-0">
-            <div className="text-sm text-white font-medium bg-black/30 px-2 py-1 rounded">
-              {source}
+  return (
+    <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden relative">
+      <div ref={mapContainer} className="absolute inset-0 rounded-xl shadow-2xl" />
+      
+      {/* Route information overlay */}
+      {(source && destination) && (
+        <div className="absolute bottom-4 left-4 right-4 glass p-4 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              <span className="text-sm font-medium text-foreground">{source}</span>
             </div>
-            <div className="text-sm text-white font-medium bg-black/30 px-2 py-1 rounded">
-              {destination}
+            <div className="text-center">
+              <div className="text-sm font-bold text-foreground">{routeInfo.distance}</div>
+              <div className="text-xs text-foreground/70">{routeInfo.duration}</div>
             </div>
-          </div>
-
-          {/* Distance and time - updated to use routeInfo */}
-          <div className="text-md font-medium text-white bg-black/30 px-3 py-1 rounded mt-8">
-            {routeInfo.distance} • {routeInfo.duration}
-          </div>
-        </div>
-      ) : (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
-          <div className="text-center text-white bg-black/40 px-4 py-3 rounded-lg">
-            <p className="text-lg font-medium">Enter your pickup and destination</p>
-            <p className="text-sm mt-2 text-white/80 font-medium">We'll show you the best ride options</p>
+            <div className="flex items-center space-x-3">
+              <span className="text-sm font-medium text-foreground">{destination}</span>
+              <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Subtle texture overlay */}
-      <div className="absolute inset-0 opacity-5 mix-blend-overlay" 
-           style={{ 
-             backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-             backgroundSize: '80px 80px'
-           }}
-      ></div>
+      
+      {/* Gradient overlay for better text readability */}
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-background/20 rounded-xl" />
     </div>
   );
 };
