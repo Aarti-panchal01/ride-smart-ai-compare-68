@@ -1,8 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from 'react';
 
 interface MapProps {
   source?: string;
@@ -15,10 +11,6 @@ interface RouteInfo {
 }
 
 const Map: React.FC<MapProps> = ({ source, destination }) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string>('');
-  const [showTokenInput, setShowTokenInput] = useState<boolean>(true);
   const [routeInfo, setRouteInfo] = useState<RouteInfo>({
     distance: '0',
     duration: '0'
@@ -66,186 +58,133 @@ const Map: React.FC<MapProps> = ({ source, destination }) => {
     }
   }, [source, destination]);
 
-  const initializeMap = (token: string) => {
-    if (!mapContainer.current) return;
-
-    mapboxgl.accessToken = token;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      projection: 'globe' as any,
-      zoom: 2,
-      center: [77.5946, 12.9716], // Bangalore coordinates
-      pitch: 50,
-      bearing: 0,
-      antialias: true
-    });
-
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl({
-        visualizePitch: true,
-      }),
-      'top-right'
-    );
-
-    // Add atmosphere and fog effects
-    map.current.on('style.load', () => {
-      map.current?.setFog({
-        color: 'rgb(220, 159, 159)',
-        'high-color': 'rgb(36, 92, 223)',
-        'horizon-blend': 0.4,
-        'space-color': 'rgb(11, 11, 25)',
-        'star-intensity': 0.35
-      });
-    });
-
-    // Rotation animation settings
-    const secondsPerRevolution = 120;
-    const maxSpinZoom = 5;
-    const slowSpinZoom = 3;
-    let userInteracting = false;
-    let spinEnabled = true;
-
-    // Spin globe function
-    function spinGlobe() {
-      if (!map.current) return;
-      
-      const zoom = map.current.getZoom();
-      if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
-        let distancePerSecond = 360 / secondsPerRevolution;
-        if (zoom > slowSpinZoom) {
-          const zoomDif = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
-          distancePerSecond *= zoomDif;
-        }
-        const center = map.current.getCenter();
-        center.lng -= distancePerSecond;
-        map.current.easeTo({ center, duration: 1000, easing: (n) => n });
-      }
-    }
-
-    // Event listeners for interaction
-    map.current.on('mousedown', () => {
-      userInteracting = true;
-    });
-    
-    map.current.on('dragstart', () => {
-      userInteracting = true;
-    });
-    
-    map.current.on('mouseup', () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-    
-    map.current.on('touchend', () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-
-    map.current.on('moveend', () => {
-      spinGlobe();
-    });
-
-    // Start the globe spinning
-    spinGlobe();
-
-    // Add route markers when source and destination are available
-    if (source && destination) {
-      // Add source marker
-      new mapboxgl.Marker({ color: '#22c55e' })
-        .setLngLat([77.5946, 12.9716])
-        .setPopup(new mapboxgl.Popup().setHTML(`<h3>${source}</h3>`))
-        .addTo(map.current);
-
-      // Add destination marker  
-      new mapboxgl.Marker({ color: '#ef4444' })
-        .setLngLat([77.6347, 12.9082])
-        .setPopup(new mapboxgl.Popup().setHTML(`<h3>${destination}</h3>`))
-        .addTo(map.current);
-
-      // Fit to show both markers
-      const bounds = new mapboxgl.LngLatBounds()
-        .extend([77.5946, 12.9716])
-        .extend([77.6347, 12.9082]);
-      
-      map.current.fitBounds(bounds, { padding: 100 });
-    }
-
-    setShowTokenInput(false);
-  };
-
-  const handleTokenSubmit = () => {
-    if (mapboxToken.trim()) {
-      initializeMap(mapboxToken.trim());
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      map.current?.remove();
-    };
-  }, []);
-
-  if (showTokenInput) {
-    return (
-      <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden glass relative flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <h3 className="text-lg font-semibold mb-4 text-foreground">Enable 3D Map</h3>
-          <p className="text-sm text-foreground/70 mb-4">
-            Enter your Mapbox public token to see a beautiful 3D globe map. Get your free token at{' '}
-            <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-              mapbox.com
-            </a>
-          </p>
-          <div className="space-y-3">
-            <Input
-              type="text"
-              placeholder="pk.eyJ1Ijoi..."
-              value={mapboxToken}
-              onChange={(e) => setMapboxToken(e.target.value)}
-              className="bg-background/50 border-border text-foreground"
-            />
-            <Button 
-              onClick={handleTokenSubmit}
-              disabled={!mapboxToken.trim()}
-              className="w-full"
-            >
-              Initialize Map
-            </Button>
+  return (
+    <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden glass relative">
+      {/* Beautiful map background with enhanced styling */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        {/* Map grid with enhanced styling */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="grid grid-cols-16 grid-rows-12 h-full w-full">
+            {Array.from({ length: 192 }).map((_, i) => (
+              <div key={i} className="border-[0.5px] border-foreground/10"></div>
+            ))}
           </div>
         </div>
+        
+        {/* Enhanced road network */}
+        <div className="absolute inset-0">
+          {/* Main highways */}
+          <div className="absolute top-1/4 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-foreground/30 to-transparent"></div>
+          <div className="absolute top-3/4 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-foreground/30 to-transparent"></div>
+          <div className="absolute left-1/4 top-0 h-full w-[3px] bg-gradient-to-b from-transparent via-foreground/30 to-transparent"></div>
+          <div className="absolute left-3/4 top-0 h-full w-[3px] bg-gradient-to-b from-transparent via-foreground/30 to-transparent"></div>
+          
+          {/* Secondary roads */}
+          <div className="absolute top-[15%] left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-foreground/20 to-transparent"></div>
+          <div className="absolute top-[60%] left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-foreground/20 to-transparent"></div>
+          <div className="absolute left-[15%] top-0 h-full w-[2px] bg-gradient-to-b from-transparent via-foreground/20 to-transparent"></div>
+          <div className="absolute left-[85%] top-0 h-full w-[2px] bg-gradient-to-b from-transparent via-foreground/20 to-transparent"></div>
+          
+          {/* Diagonal connections */}
+          <div className="absolute w-[120%] h-[2px] bg-gradient-to-r from-transparent via-foreground/15 to-transparent origin-bottom-left rotate-45 left-0 top-0"></div>
+          <div className="absolute w-[120%] h-[2px] bg-gradient-to-r from-transparent via-foreground/15 to-transparent origin-top-left -rotate-45 left-0 bottom-0"></div>
+        </div>
+        
+        {/* Enhanced city areas and landmarks */}
+        <div className="absolute inset-0">
+          {/* Business districts */}
+          <div className="absolute top-[18%] left-[25%] w-[20%] h-[15%] rounded-lg bg-primary/10 blur-sm"></div>
+          <div className="absolute bottom-[20%] right-[15%] w-[25%] h-[12%] rounded-lg bg-accent-cyan/10 blur-sm"></div>
+          <div className="absolute top-[55%] left-[10%] w-[15%] h-[12%] rounded-lg bg-accent-purple/10 blur-sm"></div>
+          
+          {/* Important landmarks with glowing effect */}
+          <div className="absolute top-[12%] left-[35%] w-2 h-2 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50"></div>
+          <div className="absolute top-[40%] left-[15%] w-2 h-2 rounded-full bg-accent-cyan animate-pulse shadow-lg shadow-accent-cyan/50"></div>
+          <div className="absolute top-[65%] left-[70%] w-2 h-2 rounded-full bg-accent-purple animate-pulse shadow-lg shadow-accent-purple/50"></div>
+          <div className="absolute top-[25%] left-[80%] w-2 h-2 rounded-full bg-primary animate-pulse shadow-lg shadow-primary/50"></div>
+          <div className="absolute top-[50%] right-[20%] w-2 h-2 rounded-full bg-accent-cyan animate-pulse shadow-lg shadow-accent-cyan/50"></div>
+          
+          {/* Buildings with enhanced styling */}
+          <div className="absolute top-[10%] left-[10%] w-3 h-4 bg-foreground/20 rounded-sm shadow-lg"></div>
+          <div className="absolute top-[20%] left-[50%] w-4 h-3 bg-foreground/20 rounded-sm shadow-lg"></div>
+          <div className="absolute top-[60%] left-[75%] w-3 h-4 bg-foreground/20 rounded-sm shadow-lg"></div>
+          <div className="absolute top-[70%] left-[20%] w-5 h-3 bg-foreground/20 rounded-sm shadow-lg"></div>
+          <div className="absolute top-[40%] right-[10%] w-3 h-3 bg-foreground/20 rounded-sm shadow-lg"></div>
+          
+          {/* Water bodies with reflection effect */}
+          <div className="absolute top-[45%] left-[50%] w-[18%] h-[18%] rounded-full bg-gradient-to-br from-blue-400/20 to-blue-600/30 shadow-inner"></div>
+          
+          {/* Parks and green spaces */}
+          <div className="absolute top-[15%] right-[20%] w-[12%] h-[12%] bg-gradient-to-br from-green-400/20 to-green-600/30 rounded-lg shadow-inner"></div>
+        </div>
+        
+        {/* Enhanced map labels */}
+        <div className="absolute inset-0 text-[8px] font-medium text-foreground/50 select-none">
+          <div className="absolute top-[20%] left-[27%]">Business District</div>
+          <div className="absolute bottom-[23%] right-[17%]">Marina Bay</div>
+          <div className="absolute top-[57%] left-[12%]">Tech Park</div>
+          <div className="absolute top-[48%] left-[51%]">Central Lake</div>
+          <div className="absolute top-[16%] right-[24%]">City Park</div>
+        </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden relative">
-      <div ref={mapContainer} className="absolute inset-0 rounded-xl shadow-2xl" />
-      
-      {/* Route information overlay */}
-      {(source && destination) && (
-        <div className="absolute bottom-4 left-4 right-4 glass p-4 rounded-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-              <span className="text-sm font-medium text-foreground">{source}</span>
+      {/* Route visualization when both locations are selected */}
+      {(source && destination) ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+          {/* Enhanced route line */}
+          <div className="relative w-4/5 h-2 bg-gradient-to-r from-transparent via-foreground/30 to-transparent rounded-full">
+            {/* Start point with glow */}
+            <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 h-6 w-6 bg-green-400 rounded-full shadow-lg shadow-green-400/50 flex items-center justify-center">
+              <div className="h-3 w-3 bg-green-500 rounded-full"></div>
             </div>
-            <div className="text-center">
-              <div className="text-sm font-bold text-foreground">{routeInfo.distance}</div>
-              <div className="text-xs text-foreground/70">{routeInfo.duration}</div>
+            
+            {/* Animated route line */}
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 h-2 bg-gradient-to-r from-green-400 via-primary to-red-400 rounded-full animate-pulse"
+                style={{width: '100%'}}></div>
+            
+            {/* End point with glow */}
+            <div className="absolute -right-3 top-1/2 transform -translate-y-1/2 h-6 w-6 bg-red-400 rounded-full shadow-lg shadow-red-400/50 flex items-center justify-center">
+              <div className="h-3 w-3 bg-red-500 rounded-full"></div>
             </div>
-            <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium text-foreground">{destination}</span>
-              <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+          </div>
+
+          {/* Enhanced location labels */}
+          <div className="flex justify-between w-4/5 mt-6 px-0">
+            <div className="text-sm text-foreground font-semibold glass px-3 py-2 rounded-lg">
+              📍 {source}
             </div>
+            <div className="text-sm text-foreground font-semibold glass px-3 py-2 rounded-lg">
+              🎯 {destination}
+            </div>
+          </div>
+
+          {/* Enhanced distance and time display */}
+          <div className="glass px-6 py-3 rounded-xl mt-6 border border-primary/20">
+            <div className="flex items-center space-x-4 text-foreground">
+              <div className="text-center">
+                <div className="text-lg font-bold text-primary">{routeInfo.distance}</div>
+                <div className="text-xs text-foreground/70 font-medium">Distance</div>
+              </div>
+              <div className="w-px h-8 bg-foreground/20"></div>
+              <div className="text-center">
+                <div className="text-lg font-bold text-accent-cyan">{routeInfo.duration}</div>
+                <div className="text-xs text-foreground/70 font-medium">Duration</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
+          <div className="text-center glass px-6 py-4 rounded-xl border border-primary/20">
+            <div className="text-2xl mb-2">🗺️</div>
+            <p className="text-lg font-semibold text-foreground">Enter Pickup & Destination</p>
+            <p className="text-sm mt-2 text-foreground/70 font-medium">We'll calculate the best route for you</p>
           </div>
         </div>
       )}
-      
-      {/* Gradient overlay for better text readability */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-background/20 rounded-xl" />
+
+      {/* Subtle animated overlay for depth */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/10 rounded-xl pointer-events-none"></div>
     </div>
   );
 };
